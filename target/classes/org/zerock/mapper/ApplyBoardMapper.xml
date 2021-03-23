@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zerock.mapper.ApplyBoardMapper">
+
+<sql id="criteria">
+		<trim prefix="(" suffix=") AND " prefixOverrides="OR">
+		<foreach item='type' collection="typeArr">
+			<trim prefix="OR">
+				<choose>
+					<when test="type == 'N'.toString()">
+						pname like '%'||#{keyword}||'%'
+					</when>
+				</choose>
+			</trim>
+		</foreach>
+	</trim>		
+</sql>	
+
+
+<select id="getList" resultType="org.zerock.domain.ApplyBoardVO">
+	<![CDATA[
+		select * from tb_apply where ano > 0
+	]]>
+</select>
+
+ 	<insert id="insert">
+		insert into tb_apply (ano
+								,pname
+								,relation
+								,pbirth
+								,addr
+								,phone
+								,useremail
+								,adddate
+								,cname
+								,cgender
+								,cbirth
+								,apptype
+								,appstate
+								,cunicode
+								,pw)
+		values (seq_tb_apply.nextval
+				,#{pname}
+				,#{relation}
+				,#{pbirth}
+				,#{addr}
+				,#{phone}
+				,#{useremail}
+				,sysdate
+				,#{cname}
+				,#{cgender}
+				,#{cbirth}
+				,#{apptype}
+				,'승인대기'
+				,'default'
+				,#{pw})
+	</insert>
+
+ 	<select id="read" resultType="org.zerock.domain.ApplyBoardVO">
+		select * from tb_apply where ano = #{ano}
+	</select>
+	
+	<select id="anoCheck" resultType="String">
+		select count(ano) from tb_apply where ano = #{ano}
+	</select>
+	
+	<select id="getListWithPaging"
+		resultType="org.zerock.domain.ApplyBoardVO">
+
+	<![CDATA[
+		select
+			ano, pname, pw, appstate, apptype, adddate
+		from
+       (
+		select /*+INDEX_DESC(tb_apply pk_tb_apply) */
+			rownum rn, ano, pname, pw, appstate, apptype, adddate
+		from tb_apply
+		where
+	]]>
+		
+	<include refid="criteria"></include>
+	
+	<![CDATA[
+		rownum <= #{pageNum} * #{amount}
+		) A
+		where rn > (#{pageNum} -1) * #{amount}
+	]]>
+		
+	</select>
+
+	<select id="getTotalCount" resultType="int">
+		select count(*) 
+		from tb_apply
+		where
+	<include refid="criteria"></include>
+	
+	ano > 0
+	</select>
+
+	<delete id="delete">
+		delete from tb_apply
+		where ano = #{ano}
+	</delete>
+	
+	
+   <update id="update">
+       update tb_apply
+       set    pname = #{pname}
+            ,relation = #{relation}
+            ,pbirth = #{pbirth}
+            ,addr = #{addr}
+            ,phone = #{phone}
+            ,useremail = #{useremail}
+            ,cname = #{cname}
+            ,cgender = #{cgender}
+            ,cbirth = #{cbirth}
+            ,apptype = #{apptype}
+            ,appstate = #{appstate}
+      where ano = #{ano}
+      <!-- and pw = #{pw} -->
+    </update>
+	 
+	 <update id="pass">
+	 {call
+	 	declare
+	 	begin
+			insert into tb_child(cunicode, classname, cgender, cname, cbirth, enter, graduation)
+			values(#{cunicode}, #{cclass}, #{cgender}, #{cname}, #{cbirth}, null, null);
+			
+			update tb_apply
+			set		cunicode = #{cunicode}
+					,cclass = #{cclass}
+					,appstate = '승인완료'
+			where ano = #{ano};
+		end
+	 }
+	 </update>
+	 
+	 <select id="success" resultType="org.zerock.domain.ApplyBoardVO">
+	 	select ano, useremail
+	 	from tb_apply
+	 	where useremail = #{useremail}
+	 </select>
+	 
+	<select id="emailCheck" resultType="String" parameterType="String">
+		select count(*)
+		from (select useremail from tb_apply
+		union
+		select useremail from tb_parents) A
+		where useremail = #{useremail}
+	</select>
+	 
+</mapper>

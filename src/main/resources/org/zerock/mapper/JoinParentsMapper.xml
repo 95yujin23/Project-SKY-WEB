@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zerock.mapper.JoinParentsMapper">
+
+	<select id="getList" resultType="org.zerock.domain.JoinParentsVO">
+		select p.userid, p.auth, p.username, p.userpw, p.userbirth, p.userphone, p.useraddr, p.useremail, p.usertype, p.relation, p.apptype, c.cunicode, c.classname, c.cname, c.cbirth
+		from tb_parents p, tb_child c
+		where p.cUnicode = c.cUnicode
+	</select>
+	
+	<!-- insert -->
+	<insert id="insert">
+		insert into tb_parents(userid, auth, cunicode, username, userpw, userbirth, userphone, useraddr, useremail, usertype, relation, apptype)
+		values (#{userId}, #{auth}, #{cunicode}, #{userName}, #{userPw}, #{userBirth}, #{userPhone}, #{userAddr}, #{userEmail}, #{userType}, #{relation}, #{apptype})
+	</insert>
+	
+	<!-- read -->
+	<select id="read" resultType="org.zerock.domain.JoinParentsVO">
+		select p.userid, p.auth, p.username, p.userpw, p.userbirth, p.userphone, p.useraddr, p.useremail, p.usertype, p.relation, p.apptype, p.cunicode, c.classname, c.cname, c.cbirth
+		from tb_parents p, tb_child c
+		where p.userId = #{userId}
+		and p.cUnicode = c.cUnicode
+	</select>
+	
+	
+	<select id="readParents" resultType="org.zerock.domain.ApplyBoardVO">
+		select * from tb_apply where cunicode = #{cunicode}
+	</select>
+	
+	<select id="applyList" resultType="org.zerock.domain.ApplyBoardVO">
+		select cunicode from tb_apply
+	</select>
+	
+	<select id="idCheck" resultType="int" parameterType="String">
+		select count(*)
+		from (select userid from tb_teacher
+		union
+		select userid from tb_parents) A
+		where userid = #{userid}
+	</select>
+	
+	<!-- update -->
+	<update id="update">
+		update tb_parents
+		set auth = #{auth}, 
+		cunicode = #{cunicode}, 
+		username = #{userName}, 
+		userpw = #{userPw}, 
+		userbirth = #{userBirth}, 
+		userphone = #{userPhone}, 
+		useraddr = #{userAddr}, 
+		useremail = #{userEmail}, 
+		relation = #{relation}, 
+		apptype = #{apptype}
+		where userid = #{userId}
+	</update>
+	
+	<!-- delete -->
+	<delete id="delete">
+		delete tb_parents where userid = #{userId}
+	</delete>
+	
+
+</mapper>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:security="http://www.springframework.org/schema/security"
+   xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+      http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!-- <bean id="customAccessDenied" class="org.zerock.security.CustomAccessDeniedHandler"></bean> -->
+<!-- <bean id="customLoginSuccess" class="org.zerock.security.CustomLoginSuccessHandler"></bean> -->
+<!-- <bean id="customPasswordEncoder" class="org.zerock.security.CustomNoOpPasswordEncoder"></bean> -->
+<bean id="bcryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
+<!-- <bean id="customUserDetailsService" class="org.zerock.security.CustomUserDetailsService"></bean> -->
+
+  <!-- <security:http auto-config="true" use-expressions="true"> -->
+  
+   <security:http>
+<!--    	  <security:intercept-url pattern="/sample/all" access="permitAll" />
+   	  <security:intercept-url pattern="/board/applyList" access="hasRole('ROLE_MEMBER')" />	
+   	  <security:intercept-url pattern="/board/noticeList" access="hasRole('ROLE_ADMIN')"/> -->
+   	  <!-- all -->
+   	  <security:intercept-url pattern="/info/**" access="permitAll"/>
+   	  <security:intercept-url pattern="/member/join" access="permitAll"/>
+   	  <security:intercept-url pattern="/member/joinparents" access="permitAll"/>
+   	  <security:intercept-url pattern="/member/jointeacher" access="permitAll"/>
+   	  <security:intercept-url pattern="/member/login" access="permitAll"/>
+   	  <security:intercept-url pattern="/member/joinSuccess" access="permitAll"/>
+   	  <security:intercept-url pattern="/apply/applyCheck" access="permitAll"/>
+   	  <security:intercept-url pattern="/apply/applyGetMember" access="permitAll"/>
+   	  <security:intercept-url pattern="/apply/applyRegister" access="permitAll"/>
+   	  
+   	  <!-- member -->
+   	  <security:intercept-url pattern="/board/**" access="hasAnyRole('B, C, D, E, F, G, b, c, d, e, f, g, ROLE_A')"/>
+   	  
+   	  <!-- admin -->
+   	  <security:intercept-url pattern="/admin/**" access="hasRole('ROLE_A')"/>
+   	  <security:intercept-url pattern="/apply/applyGet" access="hasRole('ROLE_A')"/>
+   	  <security:intercept-url pattern="/apply/applyList" access="hasRole('ROLE_A')"/>
+   	  <security:intercept-url pattern="/member/memGet" access="hasRole('ROLE_A')"/>
+   	  <security:intercept-url pattern="/member/memList" access="hasRole('ROLE_A')"/>
+   	  <security:intercept-url pattern="/member/memModify" access="hasRole('ROLE_A')"/>
+   	  
+   	  <security:form-login username-parameter="userId"
+		    	password-parameter="userPw"
+		    	login-processing-url="/login"
+		    	login-page="/member/login"
+		    	default-target-url="/"/>
+   	  <security:logout logout-url="/" invalidate-session="true" logout-success-url="/"/>
+   	  
+   	  <!-- 에러페이지 -->
+   	  <security:access-denied-handler error-page="/accessError/" />
+   	  
+   </security:http>
+
+   <security:authentication-manager>
+   		<!-- <security:authentication-provider user-service-ref="customUserDetailsService"> -->
+ 		<security:authentication-provider>
+			<security:jdbc-user-service data-source-ref="dataSource"
+   			users-by-username-query="select A.userid, A.userpw, A.enabled, A.auth
+									from (select userid, userpw, enabled, auth from tb_teacher
+									    union
+									    select userid, userpw, enabled, auth from tb_parents
+									    ) A
+									where userid = ?"
+   			authorities-by-username-query="select A.userid, A.auth
+											from (select userid, auth from tb_teacher
+											    union
+											    select userid, auth from tb_parents) A
+											where userid = ?" />
+   			
+   			<security:password-encoder ref="bcryptPasswordEncoder" />
+   			
+   		</security:authentication-provider>
+   </security:authentication-manager>
+</beans>

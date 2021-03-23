@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zerock.mapper.ClassPhotoMapper">
+
+	<select id="getList" resultType="org.zerock.domain.ClassPhotoVO">
+	<![CDATA[
+		select * from tb_photo where bno > 0
+	]]>
+	</select>
+
+	
+
+	<select id="getListWithPaging" resultType="org.zerock.domain.ClassPhotoVO">
+
+	<![CDATA[
+     select
+        bno, title, tag, regdate, uuid, filename
+    from
+       (
+		select /*+INDEX_DESC(tb_photo pk_tb_photo) */
+			rownum rn, A.bno, A.title,  A.tag, A.regdate, P.uuid, P.filename
+		from
+			tb_photo A, photo_attach P
+	       where rownum <= #{pageNum} * #{amount}
+	       and A.bno = P.bno
+	     ) A
+	where rn > (#{pageNum} -1) * #{amount}
+	order by bno desc
+	]]>
+	</select>
+
+	<select id="getTotalCount" resultType="int">
+		select count(*)
+		from tb_photo
+		WHERE bno > 0
+	</select>
+
+
+	<insert id="insert">
+		insert into tb_photo (bno, className, title,
+		content,tag)
+		values (seq_tb_photo.nextval, #{className},#{title},
+		#{content}, #{tag})
+	</insert>
+
+	<insert id="insertSelectKey">
+
+		<selectKey keyProperty="bno" order="BEFORE"
+			resultType="long">
+			select seq_tb_photo.nextval from dual
+		</selectKey>
+
+		insert into tb_photo (bno, className, title, content, tag)
+		values
+		(#{bno}, #{className}, #{title}, #{content},#{tag})
+	</insert>
+	<select id="read" resultType="org.zerock.domain.ClassPhotoVO">
+		select * from tb_photo where bno =
+		#{bno}
+	</select>
+
+	<delete id="delete">
+		delete from tb_photo where bno = #{bno}
+	</delete>
+
+	<update id="update">
+		update tb_photo
+		set title = #{title},
+		content =
+		#{content},
+		regdate = sysdate
+		where bno = #{bno}
+	</update>
+
+</mapper>
